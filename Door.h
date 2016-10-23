@@ -14,4 +14,4 @@ class Door{
 		void close(){
 			state = false;				
 		};	
-}
+};

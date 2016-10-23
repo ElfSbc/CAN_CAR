@@ -3,6 +3,8 @@
 //  	car.show();
 //  	display.display();  
 
+#include <Door.h>
+#include <Adafruit_SSD1306.h>
 // ********************************************************************************
 // class Car
 // ********************************************************************************
@@ -16,7 +18,7 @@ class Car{
     Door doorBack 		;
 	bool isChanged = false;
   public:  
-	void show(void);
+	void show(Adafruit_SSD1306 display);
 	bool processCanMessage(long unsigned int messageType, unsigned char length, unsigned char data[8]);
 };
 
