@@ -60,11 +60,11 @@ Car :: Car ()
 void Car :: canProcess();
 		{
 			CAN0.readMsgBuf(&len, rxBuf);
-			if (CAN.getCanId()==CAN_DOOR_ID){
-				doorFrontLeft.setState	( rxBuf[CAN_DOOR_BYTE]	>>	CAN_DOOR_FRONT_LEFT_BIT		&	1 );
-				doorFrontRight.setState	( rxBuf[CAN_DOOR_BYTE]	>>	CAN_DOOR_FRONT_RIGHT_BIT	&	1 );
-				doorRearLeft.setState	( rxBuf[CAN_DOOR_BYTE]	>>	CAN_DOOR_REAR_LEFT_BIT		&	1 );
-				doorRearRight.setState	( rxBuf[CAN_DOOR_BYTE]	>>	CAN_DOOR_REAR_RIGHT_BIT		&	1 );		
+			if (CAN.getCanId()==CAN_DOOR_ID){	
+				doorFrontLeft.setState	( bitRead ( rxBuf[CAN_DOOR_BYTE] ),		CAN_DOOR_FRONT_LEFT_BIT );
+				doorFrontRight.setState	( bitRead ( rxBuf[CAN_DOOR_BYTE] ),		CAN_DOOR_FRONT_RIGHT_BIT );
+				doorRearLeft.setState	( bitRead ( rxBuf[CAN_DOOR_BYTE] ),		CAN_DOOR_REAR_LEFT_BIT );
+				doorRearRight.setState	( bitRead ( rxBuf[CAN_DOOR_BYTE] ),		CAN_DOOR_REAR_RIGHT_BIT );
 			}
 			if (CAN.getCanId()==CAN_SPEED_ID){
 				speed = rxBuf[CAN_SPEED_BYTE]	>>	CAN_SPEED_BIT_TO	;
