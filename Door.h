@@ -8,10 +8,7 @@ class Door{
 		bool getState(){
 			return state;
 		};
-		void open(){
-			state = true;
+		void setState(bool newState){
+			state = newState;
 		};
-		void close(){
-			state = false;				
-		};	
 };

@@ -1,90 +1,74 @@
-// HOW TO:
-//  	display.clearDisplay();
-//  	car.show();
-//  	display.display();  
-
-#include <Door.h>
-#include <Adafruit_SSD1306.h>
 // ********************************************************************************
 // class Car
 // ********************************************************************************
-class Car{  
-  private:
-    Door doorFrontLeft 	;
-    Door doorFrontRight ;
-    Door doorRearLeft 	;
-    Door doorRearRight 	;
-    Door doorHood 		;
-    Door doorBack 		;
-	bool isChanged = false;
-  public:  
-	void show(Adafruit_SSD1306 display);
-	bool processCanMessage(long unsigned int messageType, unsigned char length, unsigned char data[8]);
-};
 
-// ********************************************************************************
-void Car::show(Adafruit_SSD1306 display)
-{
-  // show car   
-  display.drawRoundRect(95, 1, 20, 26, 4, WHITE);
-  display.drawRoundRect(97, 8, 16, 16, 4, WHITE);
-  
-  // show lights
-  display.drawLine(95, 5, 100, 2, WHITE);
-  display.drawLine(110-1, 2, 115-1, 5, WHITE);	
-  
-  // show doors
-  switch (doorFrontLeft.getState()){
-	case true:
-		display.drawLine(95, 8, 85, 14, WHITE);
-	break;
-	case false:
-		display.drawLine(95, 8, 85, 14, BLACK);
-	break;
-  }
-  switch (doorFrontRight.getState()){
-	case true:
-		display.drawLine(95, 14, 85, 20, WHITE););
-	break;
-	case false:
-		display.drawLine(95, 14, 85, 20, WHITE);;
-	break;
-  }	
-   switch (doorRearLeft.getState()){
-	case true:
-		display.drawLine(115, 8, 125, 14, WHITE);
-	break;
-	case false:
-		display.drawLine(115, 8, 125, 14, BLACK);
-	break;
-  }	
-  switch (doorRearRight.getState()){
-	case true:
-		display.drawLine(115, 14, 125, 20, WHITE);
-	break;
-	case false:
-		display.drawLine(115, 14, 125, 20, BLACK);
-	break;
-  }	
-  switch (doorHood.getState()){
-	case true:
-		// TBD: show opened hood
-	break;
-	case false:
-		// TBD: show closed hood
-	break;
-  }	
-  switch (doorBack.getState()){
-	case true:
-		// TBD: show opened back door
-	break;
-	case false:
-		// TBD: show closed bakc door
-	break;
-  }	  
+#pragma once
+
+#include <Door.h>
+#include <SPI.h>
+#include <mcp_can.h>
+
+#define SPI_CS_PIN					10				// pin for CS CAN
+#define CAN_SPEED					CAN_250KBPS		// can speed settings
+#define CAN_FREQ					MCP_16MHZ		// can frequency
+
+#define CAN_DOOR_ID					0xA1			// can packet id for doors
+#define CAN_DOOR_BYTE				2
+#define CAN_DOOR_FRONT_LEFT_BIT		4
+#define CAN_DOOR_FRONT_RIGHT_BIT	5
+#define CAN_DOOR_REAR_LEFT_BIT		6
+#define CAN_DOOR_REAR_RIGHT_BIT		7
+
+#define CAN_SPEED_ID				0xA2			// can packet id for Speed
+#define CAN_SPEED_BYTE				2
+#define CAN_SPEED_BIT_FROM			4
+#define CAN_SPEED_BIT_TO			8
+
+class Car{
+	private:		
+		
+	public:
+		int speed;
+		int rpm;
+		Door doorFrontLeft 	;
+		Door doorFrontRight ;
+		Door doorRearLeft 	;
+		Door doorRearRight 	;
+		
+		Car ();		
+		canProcess();
+
 }
 
-// ********************************************************************************
-bool Car::processCanMessage(long unsigned int messageType, unsigned char length, unsigned char data[8]){
+Car :: Car ()
+{
+	Serial.begin(115200);
+	
+	MCP_CAN CAN0(SPI_CS_PIN);                               // Set CS pin
+	
+	if(CAN0.begin(MCP_ANY, CAN_SPEED, CAN_FREQ) == CAN_OK) 
+		Serial.print("CAN: [OK]");  
+	else
+		Serial.print("CAN: [ERROR]");  
+	CAN0.setMode(MCP_NORMAL);                     // Set operation mode to normal so the MCP2515 sends acks to received data.
+	
+	CAN0.init_Filt(0, 0, CAN_DOOR_ID);
+	CAN0.init_Filt(1, 0, CAN_SPEED_ID);
 	
 }
+
+void Car :: canProcess();
+		{
+			CAN0.readMsgBuf(&len, rxBuf);
+			if (CAN.getCanId()==CAN_DOOR_ID){
+				doorFrontLeft.setState	( rxBuf[CAN_DOOR_BYTE]	>>	CAN_DOOR_FRONT_LEFT_BIT		&	1 );
+				doorFrontRight.setState	( rxBuf[CAN_DOOR_BYTE]	>>	CAN_DOOR_FRONT_RIGHT_BIT	&	1 );
+				doorRearLeft.setState	( rxBuf[CAN_DOOR_BYTE]	>>	CAN_DOOR_REAR_LEFT_BIT		&	1 );
+				doorRearRight.setState	( rxBuf[CAN_DOOR_BYTE]	>>	CAN_DOOR_REAR_RIGHT_BIT		&	1 );		
+			}
+			if (CAN.getCanId()==CAN_SPEED_ID){
+				speed = rxBuf[CAN_SPEED_BYTE]	>>	CAN_SPEED_BIT_TO	;
+			}	
+		}
+
+
